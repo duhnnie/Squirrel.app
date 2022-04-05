@@ -18,5 +18,9 @@ let package = Package(
         .testTarget(
             name: "SquirrelTests",
             dependencies: ["Squirrel"]),
+        .executableTarget(
+            name: "ServiceProvider",
+            dependencies: []
+        )
     ]
 )

@@ -24,6 +24,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
       action: #selector(AppDelegate.decreaseCount),
       keyEquivalent: ""
     )
+      
+      statusBarMenu.addItem(
+        withTitle: "Get public IP",
+        action: #selector(AppDelegate.xpcCall),
+        keyEquivalent: ""
+      )
+      
+      statusBarMenu.addItem(
+        withTitle: "Show Counter",
+        action: #selector(AppDelegate.showCounter),
+        keyEquivalent: ""
+      )
 
     statusBarMenu.addItem(
       withTitle: "Quit",
@@ -32,18 +44,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     )
   }
 
-  private func updateView() {
+  @objc private func showCounter() {
     statusBarItem.button?.title = "🌰 \(counter)"
   }
+    
+    @objc func xpcCall() {
+        let connection = NSXPCConnection(serviceName: "com.rderik.ServiceProviderXPC")
+        connection.remoteObjectInterface = NSXPCInterface(with: ServiceProviderXPCProtocol.self)
+        connection.resume()
+        
+        let service = connection.remoteObjectProxyWithErrorHandler { error in
+            print("Received error:", error)
+        } as? ServiceProviderXPCProtocol
+        
+        service!.getPublicIp() { (texto) in
+            DispatchQueue.main.async {
+                self.statusBarItem.button?.title = "\(texto)"
+            }
+        }
+    }
 
   @objc func increaseCount() {
     counter += 1
-    updateView()
+    showCounter()
   }
 
   @objc func decreaseCount() {
     counter -= 1
-    updateView()
+    showCounter()
   }
 
   @objc func quit() {
